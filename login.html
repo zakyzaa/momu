@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - MOMU Photobooth Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#fff1f2', 100: '#ffe4e6', 200: '#fecdd3',
+              300: '#fda4af', 400: '#fb7185', 500: '#f43f5e',
+              600: '#e11d48', 700: '#be123c', 800: '#9f1239', 900: '#881337',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25%       { transform: translateX(-6px); }
+      75%       { transform: translateX(6px); }
+    }
+  </style>
+
+  <!-- Supabase SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-50 via-rose-50 to-slate-100 flex items-center justify-center p-4">
+
+  <div class="w-full max-w-sm">
+
+    <!-- Logo & Brand -->
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center gap-3 mb-4">
+        <img src="logo.png" alt="MOMU Logo" class="w-14 h-14 object-contain" onerror="this.style.display='none'">
+        <div class="text-left">
+          <div class="font-extrabold text-2xl tracking-tight text-slate-900">MOMU</div>
+        </div>
+      </div>
+      <h1 class="text-xl font-bold text-slate-800">Masuk ke Dashboard</h1>
+      <p class="text-sm text-slate-500 mt-1">Internal Management System</p>
+    </div>
+
+    <!-- Setup Notice if not configured -->
+    <div id="setupNotice" class="hidden mb-4 p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 text-xs">
+      <div class="flex items-start gap-2">
+        <svg class="w-4 h-4 text-amber-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        <div>
+          <strong class="font-bold">Konfigurasi Supabase Diperlukan:</strong>
+          <p class="mt-0.5">Buka file <code class="bg-amber-100 px-1 py-0.5 rounded font-mono">supabase-config.js</code> lalu isi <code class="bg-amber-100 px-1 py-0.5 rounded font-mono">SUPABASE_URL</code> dan <code class="bg-amber-100 px-1 py-0.5 rounded font-mono">SUPABASE_ANON_KEY</code> kamu.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Login Card -->
+    <div class="bg-white rounded-2xl shadow-xl border border-slate-100 p-6">
+
+      <!-- Alert -->
+      <div id="alert" class="hidden mb-4 p-3 rounded-xl text-sm font-medium text-center"></div>
+
+      <!-- Login Form -->
+      <form id="loginForm" class="space-y-4" onsubmit="handleLogin(event)">
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5" for="email">Email Akses</label>
+          <input
+            type="email"
+            id="email"
+            placeholder="admin@momu.com"
+            autocomplete="email"
+            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition"
+            required
+          >
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5" for="password">Password</label>
+          <div class="relative">
+            <input
+              type="password"
+              id="password"
+              placeholder="••••••••"
+              autocomplete="current-password"
+              class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition pr-10"
+              required
+            >
+            <button type="button" onclick="togglePassword()" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 cursor-pointer" tabindex="-1">
+              <svg id="eyeOff" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+              </svg>
+              <svg id="eyeOn" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          id="loginBtn"
+          class="w-full py-2.5 px-4 bg-brand-600 hover:bg-brand-700 active:scale-95 text-white font-bold rounded-xl transition text-sm flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+          </svg>
+          Masuk ke Dashboard
+        </button>
+
+      </form>
+    </div>
+
+    <!-- Security note -->
+    <p class="text-center text-xs text-slate-400 mt-4">
+      🔒 Autentikasi aman melalui Supabase Auth
+    </p>
+    <p class="text-center text-xs text-slate-400 mt-1">
+      © 2026 MOMU · Internal System
+    </p>
+  </div>
+
+  <script>
+    // Cek konfigurasi
+    if (typeof isSupabaseConfigured === 'function' && !isSupabaseConfigured()) {
+      document.getElementById('setupNotice').classList.remove('hidden');
+    }
+
+    // Jika sudah ada sesi aktif di Supabase, langsung masuk ke dashboard
+    if (window.supabaseClient && typeof isSupabaseConfigured === 'function' && isSupabaseConfigured()) {
+      supabaseClient.auth.getSession().then(({ data: { session } }) => {
+        if (session) window.location.href = 'index.html';
+      }).catch(err => {
+        console.warn('Gagal cek session:', err);
+      });
+    }
+
+    function showAlert(msg, type = 'error') {
+      const el = document.getElementById('alert');
+      el.className = `mb-4 p-3 rounded-xl text-sm font-medium text-center ${
+        type === 'error'
+          ? 'bg-rose-50 text-rose-700 border border-rose-200'
+          : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+      }`;
+      el.textContent = msg;
+      el.classList.remove('hidden');
+    }
+
+    function setLoading(loading) {
+      const btn = document.getElementById('loginBtn');
+      btn.disabled = loading;
+      btn.innerHTML = loading
+        ? `<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg> Memproses...`
+        : `<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg> Masuk ke Dashboard`;
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      document.getElementById('alert').classList.add('hidden');
+
+      if (!isSupabaseConfigured()) {
+        showAlert('Supabase belum dikonfigurasi. Silakan lengkapi supabase-config.js terlebih dahulu.');
+        return;
+      }
+
+      const email    = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      setLoading(true);
+
+      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+      if (error) {
+        const msg = error.message.includes('Invalid login')
+          ? 'Email atau password salah. Periksa kembali dan coba lagi.'
+          : error.message.includes('Email not confirmed')
+          ? 'Email belum dikonfirmasi. Pastikan opsi "Auto Confirm User" diaktifkan di Supabase.'
+          : `Gagal masuk: ${error.message}`;
+
+        showAlert(msg, 'error');
+        setLoading(false);
+
+        const form = document.getElementById('loginForm');
+        form.style.animation = 'shake 0.3s';
+        setTimeout(() => form.style.animation = '', 400);
+      } else {
+        showAlert('Login berhasil! Mengalihkan...', 'success');
+        setTimeout(() => window.location.href = 'index.html', 600);
+      }
+    }
+
+    function togglePassword() {
+      const pw = document.getElementById('password');
+      pw.type = pw.type === 'password' ? 'text' : 'password';
+      document.getElementById('eyeOff').classList.toggle('hidden');
+      document.getElementById('eyeOn').classList.toggle('hidden');
+    }
+  </script>
+</body>
+</html>
