@@ -104,7 +104,6 @@
         <div>
           <div class="flex items-center gap-2">
             <span class="font-extrabold text-xl tracking-tight text-slate-900">MOMU</span>
-            <span class="text-xs px-2 py-0.5 rounded-md bg-brand-50 text-brand-700 font-semibold border border-brand-200">Photobooth Studio</span>
           </div>
           <p class="text-xs text-slate-400">Internal Management & Schedule System</p>
         </div>
@@ -115,14 +114,6 @@
         <div class="hidden md:flex items-center text-xs text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
           <svg class="w-4 h-4 mr-1.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
           <span id="current-date-badge">Hari ini</span>
-        </div>
-
-        <!-- User Info & Logout -->
-        <div class="hidden sm:flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5">
-          <div class="w-6 h-6 rounded-full bg-brand-100 text-brand-600 flex items-center justify-center">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-          </div>
-          <span id="user-email-badge" class="text-xs text-slate-600 font-medium max-w-[150px] truncate">MOMU Admin</span>
         </div>
 
         <button onclick="handleLogout()" title="Keluar" class="inline-flex items-center gap-1.5 px-2.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-rose-50 hover:border-rose-200 hover:text-rose-600 text-slate-500 text-xs font-semibold transition-all cursor-pointer">
@@ -1251,12 +1242,26 @@
     };
 
     // ==========================================
-    // INITIALIZATION & STORAGE
-    // ==========================================
     // INITIALIZATION & SUPABASE REALTIME CLOUD
     // ==========================================
+    async function handleLogout() {
+      if (confirm('Yakin ingin keluar dari dashboard MOMU?')) {
+        if (window.supabaseClient && typeof isSupabaseConfigured === 'function' && isSupabaseConfigured()) {
+          try {
+            await supabaseClient.auth.signOut();
+          } catch (e) {
+            console.warn('Sign out error:', e);
+          }
+        }
+        sessionStorage.clear();
+        localStorage.removeItem('momu_auth_session');
+        window.location.href = 'login.html';
+      }
+    }
+    window.handleLogout = handleLogout;
+
     async function initApp() {
-      // 1. Ambil info akun user dari Supabase
+      // 1. Ambil info akun user dari Supabase jika ada badge
       if (typeof isSupabaseConfigured === 'function' && isSupabaseConfigured() && window.supabaseClient) {
         try {
           const { data: { user } } = await supabaseClient.auth.getUser();
@@ -1275,34 +1280,58 @@
         try {
           const cloudBookings = await fetchBookings();
           const cloudFinances = await fetchTransactions();
+          const cloudPackages = (typeof fetchPackages === 'function') ? await fetchPackages() : [];
 
-          if (cloudBookings && cloudBookings.length > 0) {
+          const saved = localStorage.getItem(STORAGE_KEY);
+          let localObj = null;
+          if (saved) {
+            try { localObj = JSON.parse(saved); } catch (e) {}
+          }
+
+          // Prioritaskan paket dari Supabase, lalu localStorage, lalu default
+          let finalPackages = DEFAULT_PACKAGES;
+          if (cloudPackages && cloudPackages.length > 0) {
+            finalPackages = cloudPackages;
+          } else if (localObj && Array.isArray(localObj.packages) && localObj.packages.length > 0) {
+            finalPackages = localObj.packages;
+            if (typeof syncLocalToSupabase === 'function') {
+              syncLocalToSupabase(null, null, finalPackages);
+            }
+          } else {
+            if (typeof syncLocalToSupabase === 'function') {
+              syncLocalToSupabase(null, null, DEFAULT_PACKAGES);
+            }
+          }
+
+          let finalBookings = cloudBookings || [];
+          let finalFinances = cloudFinances || [];
+
+          if (finalBookings.length > 0 || (cloudPackages && cloudPackages.length > 0)) {
             // Data di cloud sudah ada -> gunakan data cloud
-            const saved = localStorage.getItem(STORAGE_KEY);
-            const localObj = saved ? JSON.parse(saved) : {};
             appData = {
-              packages: (localObj.packages && localObj.packages.length > 0) ? localObj.packages : DEFAULT_PACKAGES,
-              bookings: cloudBookings,
-              finances: cloudFinances || []
+              packages: finalPackages,
+              bookings: finalBookings,
+              finances: finalFinances
             };
             saveToLocalStorage();
             loadedFromCloud = true;
-            console.log(`[Supabase] Berhasil memuat ${cloudBookings.length} booking & ${(cloudFinances||[]).length} transaksi dari cloud.`);
+            console.log(`[Supabase] Berhasil memuat ${finalBookings.length} booking, ${finalPackages.length} paket & ${finalFinances.length} transaksi dari cloud.`);
           } else {
             // Cloud masih kosong -> unggah data saat ini (localStorage atau SAMPLE_DATA) ke Supabase
-            const saved = localStorage.getItem(STORAGE_KEY);
-            let initialData = null;
-            if (saved) {
-              try { initialData = JSON.parse(saved); } catch (e) {}
+            if (!localObj || !localObj.bookings || localObj.bookings.length === 0) {
+              localObj = JSON.parse(JSON.stringify(SAMPLE_DATA));
             }
-            if (!initialData || !initialData.bookings || initialData.bookings.length === 0) {
-              initialData = JSON.parse(JSON.stringify(SAMPLE_DATA));
-            }
-            appData = initialData;
+            appData = {
+              packages: finalPackages,
+              bookings: localObj.bookings || [],
+              finances: localObj.finances || []
+            };
             saveToLocalStorage();
 
             // Kirim ke Supabase agar perangkat lain langsung dapat data yang sama
-            await syncLocalToSupabase(appData.bookings, appData.finances);
+            if (typeof syncLocalToSupabase === 'function') {
+              await syncLocalToSupabase(appData.bookings, appData.finances, appData.packages);
+            }
             loadedFromCloud = true;
             console.log('[Supabase] Data awal berhasil disinkronkan ke cloud.');
           }
@@ -1329,6 +1358,12 @@
           appData = JSON.parse(JSON.stringify(SAMPLE_DATA));
           saveToLocalStorage();
         }
+      }
+
+      // Pastikan array packages selalu ada
+      if (!appData.packages || !Array.isArray(appData.packages) || appData.packages.length === 0) {
+        appData.packages = DEFAULT_PACKAGES;
+        saveToLocalStorage();
       }
 
       // Normalize & migrate event types so only 'Wedding' and 'Event' are used
@@ -1366,27 +1401,45 @@
     function setupRealtimeListener() {
       const realtimeBadge = document.getElementById('realtime-badge');
 
-      subscribeBookings(async () => {
-        console.log('[Realtime] Perubahan bookings terdeteksi dari cloud');
-        const freshBookings = await fetchBookings();
-        if (freshBookings && freshBookings.length > 0) {
-          appData.bookings = freshBookings;
-          saveToLocalStorage();
-          renderAll();
-          showToast('⚡ Jadwal booking diperbarui secara realtime!');
-        }
-      });
+      if (typeof subscribeBookings === 'function') {
+        subscribeBookings(async () => {
+          console.log('[Realtime] Perubahan bookings terdeteksi dari cloud');
+          const freshBookings = await fetchBookings();
+          if (freshBookings && freshBookings.length > 0) {
+            appData.bookings = freshBookings;
+            saveToLocalStorage();
+            renderAll();
+            showToast('⚡ Jadwal booking diperbarui secara realtime!');
+          }
+        });
+      }
 
-      subscribeTransactions(async () => {
-        console.log('[Realtime] Perubahan transaksi terdeteksi dari cloud');
-        const freshFinances = await fetchTransactions();
-        if (freshFinances) {
-          appData.finances = freshFinances;
-          saveToLocalStorage();
-          renderAll();
-          showToast('⚡ Catatan kas diperbarui secara realtime!');
-        }
-      });
+      if (typeof subscribeTransactions === 'function') {
+        subscribeTransactions(async () => {
+          console.log('[Realtime] Perubahan transaksi terdeteksi dari cloud');
+          const freshFinances = await fetchTransactions();
+          if (freshFinances) {
+            appData.finances = freshFinances;
+            saveToLocalStorage();
+            renderAll();
+            showToast('⚡ Catatan kas diperbarui secara realtime!');
+          }
+        });
+      }
+
+      if (typeof subscribePackages === 'function') {
+        subscribePackages(async () => {
+          console.log('[Realtime] Perubahan paket terdeteksi dari cloud');
+          const freshPackages = await fetchPackages();
+          if (freshPackages && freshPackages.length > 0) {
+            appData.packages = freshPackages;
+            saveToLocalStorage();
+            renderPackages();
+            populatePackageSelect();
+            showToast('⚡ Katalog paket diperbarui secara realtime!');
+          }
+        });
+      }
 
       if (realtimeBadge) {
         realtimeBadge.classList.remove('hidden');
@@ -2542,7 +2595,7 @@
       document.getElementById('modal-package').classList.add('hidden');
     }
 
-    function savePackage(e) {
+    async function savePackage(e) {
       e.preventDefault();
       const id = document.getElementById('package-id').value;
       const name = document.getElementById('package-name').value.trim();
@@ -2557,25 +2610,35 @@
 
       if (id) {
         const idx = appData.packages.findIndex(p => p.id === id);
+        const updated = {
+          id,
+          name,
+          duration,
+          price,
+          desc
+        };
         if (idx !== -1) {
           appData.packages[idx] = {
             ...appData.packages[idx],
-            name,
-            duration,
-            price,
-            desc
+            ...updated
           };
-          showToast('✓ Paket berhasil diperbarui!');
         }
+        if (typeof updatePackageDB === 'function' && isSupabaseConfigured() && window.supabaseClient) {
+          updatePackageDB(id, updated);
+        }
+        showToast('✓ Paket berhasil diperbarui!');
       } else {
         const newPkg = {
-          id: 'pkg-' + Date.now().toString().slice(-5),
+          id: 'pkg-' + Date.now().toString().slice(-6),
           name,
           duration: duration || '2 Jam Unlimited',
           price,
           desc
         };
         appData.packages.push(newPkg);
+        if (typeof insertPackage === 'function' && isSupabaseConfigured() && window.supabaseClient) {
+          insertPackage(newPkg);
+        }
         showToast('✓ Paket baru berhasil ditambahkan!');
       }
 
@@ -2585,12 +2648,15 @@
       renderPackages();
     }
 
-    function deletePackage(id) {
+    async function deletePackage(id) {
       const pkg = appData.packages.find(p => p.id === id);
       if (!pkg) return;
 
       if (confirm(`Yakin ingin menghapus paket "${pkg.name}"?`)) {
         appData.packages = appData.packages.filter(p => p.id !== id);
+        if (typeof deletePackageDB === 'function' && isSupabaseConfigured() && window.supabaseClient) {
+          deletePackageDB(id);
+        }
         saveToLocalStorage();
         populatePackageSelect();
         renderPackages();
@@ -2989,7 +3055,7 @@
             }
             saveToLocalStorage();
             if (typeof syncLocalToSupabase === 'function' && isSupabaseConfigured() && window.supabaseClient) {
-              syncLocalToSupabase(appData.bookings, appData.finances);
+              syncLocalToSupabase(appData.bookings, appData.finances, appData.packages);
             }
             renderAll();
             showToast('✓ Data MOMU berhasil dipulihkan dari cadangan!');
@@ -3008,7 +3074,7 @@
         appData = JSON.parse(JSON.stringify(SAMPLE_DATA));
         saveToLocalStorage();
         if (typeof syncLocalToSupabase === 'function' && isSupabaseConfigured() && window.supabaseClient) {
-          syncLocalToSupabase(appData.bookings, appData.finances);
+          syncLocalToSupabase(appData.bookings, appData.finances, appData.packages);
         }
         const nowReset = new Date();
         state.viewMonth = nowReset.getMonth();

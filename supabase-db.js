@@ -84,20 +84,50 @@ function txToRow(t) {
   };
 }
 
+function rowToPackage(r) {
+  if (!r) return null;
+  return {
+    id: r.id,
+    name: r.name ?? '',
+    duration: r.duration ?? '2 Jam Unlimited Print',
+    price: Number(r.price ?? 0),
+    desc: r.description ?? r.desc ?? ''
+  };
+}
+
+function packageToRow(p) {
+  if (!p) return null;
+  return {
+    id: p.id,
+    name: p.name,
+    duration: p.duration,
+    price: Number(p.price || 0),
+    description: p.desc ?? p.description ?? ''
+  };
+}
+
 // ============================================================
-// AUTH HELPERS
+// AUTH & LOGOUT HELPERS
 // ============================================================
 
 async function getSession() {
   if (!window.supabaseClient) return null;
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  return session;
+  try {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    return session;
+  } catch (e) {
+    return null;
+  }
 }
 
 async function getCurrentUser() {
   if (!window.supabaseClient) return null;
-  const { data: { user } } = await supabaseClient.auth.getUser();
-  return user;
+  try {
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    return user;
+  } catch (e) {
+    return null;
+  }
 }
 
 async function signOut() {
@@ -106,6 +136,23 @@ async function signOut() {
   }
   window.location.href = 'login.html';
 }
+
+async function handleLogout() {
+  if (confirm('Yakin ingin keluar dari dashboard MOMU?')) {
+    if (window.supabaseClient) {
+      try {
+        await supabaseClient.auth.signOut();
+      } catch (e) {
+        console.warn('Sign out error:', e);
+      }
+    }
+    sessionStorage.clear();
+    localStorage.removeItem('momu_auth_session');
+    window.location.href = 'login.html';
+  }
+}
+window.handleLogout = handleLogout;
+window.signOut = signOut;
 
 // ============================================================
 // BOOKINGS - CRUD
@@ -139,8 +186,12 @@ async function insertBooking(bookingData) {
 
   if (error) {
     console.error('[Supabase] Gagal insert booking:', error.message);
+    if (typeof showToast === 'function') {
+      showToast('⚠️ Gagal simpan booking ke cloud: ' + error.message);
+    }
     return null;
   }
+  console.log('[Supabase] Booking berhasil disimpan ke cloud:', data.id);
   return rowToBooking(data);
 }
 
@@ -158,8 +209,12 @@ async function updateBooking(id, bookingData) {
 
   if (error) {
     console.error('[Supabase] Gagal update booking:', error.message);
+    if (typeof showToast === 'function') {
+      showToast('⚠️ Gagal update booking ke cloud: ' + error.message);
+    }
     return null;
   }
+  console.log('[Supabase] Booking berhasil diupdate di cloud:', id);
   return rowToBooking(data);
 }
 
@@ -172,8 +227,12 @@ async function deleteBookingDB(id) {
 
   if (error) {
     console.error('[Supabase] Gagal hapus booking:', error.message);
+    if (typeof showToast === 'function') {
+      showToast('⚠️ Gagal hapus booking di cloud: ' + error.message);
+    }
     return false;
   }
+  console.log('[Supabase] Booking berhasil dihapus di cloud:', id);
   return true;
 }
 
@@ -209,8 +268,12 @@ async function insertTransaction(txData) {
 
   if (error) {
     console.error('[Supabase] Gagal insert transaksi:', error.message);
+    if (typeof showToast === 'function') {
+      showToast('⚠️ Gagal simpan kas ke cloud: ' + error.message);
+    }
     return null;
   }
+  console.log('[Supabase] Transaksi kas tersimpan di cloud:', data.id);
   return rowToTx(data);
 }
 
@@ -228,6 +291,9 @@ async function updateTransactionDB(id, txData) {
 
   if (error) {
     console.error('[Supabase] Gagal update transaksi:', error.message);
+    if (typeof showToast === 'function') {
+      showToast('⚠️ Gagal update kas ke cloud: ' + error.message);
+    }
     return null;
   }
   return rowToTx(data);
@@ -242,9 +308,98 @@ async function deleteTransactionDB(id) {
 
   if (error) {
     console.error('[Supabase] Gagal hapus transaksi:', error.message);
+    if (typeof showToast === 'function') {
+      showToast('⚠️ Gagal hapus kas di cloud: ' + error.message);
+    }
     return false;
   }
   return true;
+}
+
+// ============================================================
+// PACKAGES - CRUD
+// ============================================================
+
+async function fetchPackages() {
+  if (!window.supabaseClient) return [];
+  try {
+    const { data, error } = await supabaseClient
+      .from('packages')
+      .select('*')
+      .order('price', { ascending: true });
+
+    if (error) {
+      console.warn('[Supabase] Gagal fetch packages:', error.message);
+      return [];
+    }
+    return (data || []).map(rowToPackage);
+  } catch (e) {
+    return [];
+  }
+}
+
+async function insertPackage(pkgData) {
+  if (!window.supabaseClient) return null;
+  try {
+    const row = packageToRow(pkgData);
+    const { data, error } = await supabaseClient
+      .from('packages')
+      .upsert([row], { onConflict: 'id' })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('[Supabase] Gagal insert/upsert package:', error.message);
+      return null;
+    }
+    console.log('[Supabase] Paket berhasil disimpan di cloud:', data.id);
+    return rowToPackage(data);
+  } catch (e) {
+    return null;
+  }
+}
+
+async function updatePackageDB(id, pkgData) {
+  if (!window.supabaseClient) return null;
+  try {
+    const row = packageToRow(pkgData);
+    delete row.id;
+
+    const { data, error } = await supabaseClient
+      .from('packages')
+      .update(row)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('[Supabase] Gagal update package:', error.message);
+      return null;
+    }
+    console.log('[Supabase] Paket berhasil diupdate di cloud:', id);
+    return rowToPackage(data);
+  } catch (e) {
+    return null;
+  }
+}
+
+async function deletePackageDB(id) {
+  if (!window.supabaseClient) return false;
+  try {
+    const { error } = await supabaseClient
+      .from('packages')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('[Supabase] Gagal hapus package:', error.message);
+      return false;
+    }
+    console.log('[Supabase] Paket berhasil dihapus di cloud:', id);
+    return true;
+  } catch (e) {
+    return false;
+  }
 }
 
 // ============================================================
@@ -253,6 +408,7 @@ async function deleteTransactionDB(id) {
 
 let bookingsChannel = null;
 let transactionsChannel = null;
+let packagesChannel = null;
 
 function subscribeBookings(onChangeCallback) {
   if (!window.supabaseClient) return null;
@@ -266,7 +422,7 @@ function subscribeBookings(onChangeCallback) {
       'postgres_changes',
       { event: '*', schema: 'public', table: 'bookings' },
       (payload) => {
-        console.log('[Realtime] Bookings event:', payload.eventType);
+        console.log('[Realtime] Perubahan bookings diterima:', payload.eventType);
         onChangeCallback(payload);
       }
     )
@@ -287,7 +443,7 @@ function subscribeTransactions(onChangeCallback) {
       'postgres_changes',
       { event: '*', schema: 'public', table: 'transactions' },
       (payload) => {
-        console.log('[Realtime] Transactions event:', payload.eventType);
+        console.log('[Realtime] Perubahan transaksi diterima:', payload.eventType);
         onChangeCallback(payload);
       }
     )
@@ -296,25 +452,46 @@ function subscribeTransactions(onChangeCallback) {
   return transactionsChannel;
 }
 
+function subscribePackages(onChangeCallback) {
+  if (!window.supabaseClient) return null;
+  if (packagesChannel) {
+    supabaseClient.removeChannel(packagesChannel);
+  }
+
+  packagesChannel = supabaseClient
+    .channel('realtime:packages')
+    .on(
+      'postgres_changes',
+      { event: '*', schema: 'public', table: 'packages' },
+      (payload) => {
+        console.log('[Realtime] Perubahan paket diterima:', payload.eventType);
+        onChangeCallback(payload);
+      }
+    )
+    .subscribe();
+
+  return packagesChannel;
+}
+
 function unsubscribeAll() {
   if (!window.supabaseClient) return;
   if (bookingsChannel) supabaseClient.removeChannel(bookingsChannel);
   if (transactionsChannel) supabaseClient.removeChannel(transactionsChannel);
+  if (packagesChannel) supabaseClient.removeChannel(packagesChannel);
 }
 
 // ============================================================
 // SYNC LOCAL DATA TO SUPABASE
 // ============================================================
 
-async function syncLocalToSupabase(bookingsList, financesList) {
+async function syncLocalToSupabase(bookingsList, financesList, packagesList) {
   if (!window.supabaseClient || !isSupabaseConfigured()) return;
   const user = await getCurrentUser();
-  if (!user) return;
 
   if (Array.isArray(bookingsList)) {
     for (const b of bookingsList) {
       const row = bookingToRow(b);
-      row.user_id = user.id;
+      if (user && user.id) row.user_id = user.id;
       const { error } = await supabaseClient.from('bookings').upsert(row, { onConflict: 'id' });
       if (error) console.warn('[Supabase Sync] Gagal booking:', error.message);
     }
@@ -323,9 +500,17 @@ async function syncLocalToSupabase(bookingsList, financesList) {
   if (Array.isArray(financesList)) {
     for (const f of financesList) {
       const row = txToRow(f);
-      row.user_id = user.id;
+      if (user && user.id) row.user_id = user.id;
       const { error } = await supabaseClient.from('transactions').upsert(row, { onConflict: 'id' });
       if (error) console.warn('[Supabase Sync] Gagal tx:', error.message);
+    }
+  }
+
+  if (Array.isArray(packagesList)) {
+    for (const p of packagesList) {
+      const row = packageToRow(p);
+      const { error } = await supabaseClient.from('packages').upsert(row, { onConflict: 'id' });
+      if (error) console.warn('[Supabase Sync] Gagal package:', error.message);
     }
   }
 
@@ -340,9 +525,13 @@ window.fetchTransactions = fetchTransactions;
 window.insertTransaction = insertTransaction;
 window.updateTransactionDB = updateTransactionDB;
 window.deleteTransactionDB = deleteTransactionDB;
+window.fetchPackages = fetchPackages;
+window.insertPackage = insertPackage;
+window.updatePackageDB = updatePackageDB;
+window.deletePackageDB = deletePackageDB;
 window.subscribeBookings = subscribeBookings;
 window.subscribeTransactions = subscribeTransactions;
+window.subscribePackages = subscribePackages;
 window.unsubscribeAll = unsubscribeAll;
 window.getCurrentUser = getCurrentUser;
-window.signOut = signOut;
 window.syncLocalToSupabase = syncLocalToSupabase;
