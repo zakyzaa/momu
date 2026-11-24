@@ -229,7 +229,7 @@
         <svg class="w-5 h-5 text-indigo-200 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 004 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         <div>
           <p class="text-xs font-bold text-indigo-200 uppercase tracking-wider">Mode: Semua Waktu (All-Time)</p>
-          <p class="text-sm font-semibold">Menampilkan akumulasi seluruh data dari semua periode � tanpa filter bulan/tahun.</p>
+          <p class="text-sm font-semibold">Menampilkan akumulasi seluruh data dari semua periode — tanpa filter bulan/tahun.</p>
         </div>
       </div>
       <button onclick="toggleAllTime()" class="shrink-0 ml-4 px-3 py-1.5 rounded-xl bg-white/20 hover:bg-white/30 text-white text-xs font-bold cursor-pointer transition-colors">
@@ -973,7 +973,7 @@
           <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         </div>
         <div>
-          <h3 class="font-bold text-slate-900 text-base">Acara Selesai! ??</h3>
+          <h3 class="font-bold text-slate-900 text-base">Acara Selesai! 🎉📸</h3>
           <p class="text-xs text-slate-500">Input total cetakan untuk melengkapi laporan acara</p>
         </div>
       </div>
@@ -1059,7 +1059,7 @@
         <div id="finance-booking-ref-box">
           <label class="block text-xs font-semibold text-slate-700 mb-1">Tautkan ke Agenda <span class="text-slate-400 font-normal">(Opsional)</span></label>
           <select id="finance-booking-ref" class="w-full text-xs px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500">
-            <option value="">� Tidak dikaitkan ke agenda �</option>
+            <option value="">— Tidak dikaitkan ke agenda —</option>
             <!-- Injected by JS -->
           </select>
           <p class="text-[11px] text-slate-400 mt-1">Tautkan pencatatan ini ke agenda aktif / belum selesai (opsional).</p>
@@ -1109,7 +1109,6 @@
         <!-- Injected by JS -->
       </div>
       <div class="px-6 pb-5 flex justify-end gap-2">
-        <button onclick="editFinanceFromDetail()" id="btn-edit-finance-detail" class="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 text-xs font-semibold cursor-pointer">✏️ Edit</button>
         <button onclick="closeFinanceDetailModal()" class="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold cursor-pointer">Tutup</button>
       </div>
     </div>
@@ -1211,7 +1210,7 @@
 
   <!-- TOAST NOTIFICATION -->
   <div id="toast" class="fixed bottom-6 right-6 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-lg text-xs font-semibold flex items-center gap-2 transform translate-y-20 opacity-0 transition-all duration-200 pointer-events-none">
-    <span id="toast-icon">?</span>
+    <span id="toast-icon">✓</span>
     <span id="toast-msg">Pesan notifikasi</span>
   </div>
 
@@ -1253,7 +1252,7 @@
         'Booking Photobooth (DP)',
         'Booking Photobooth (Pelunasan)',
         'Pelunasan Wedding',
-        'Pelunasan Event',
+        'Pendapatan Event',
         'Bagi Hasil Event',
         'Add-on Extra Hours / Overtime',
         'Add-on Custom Backdrop / Guestbook',
@@ -1380,17 +1379,17 @@
         }
       ],
       finances: [
-        { id: 'FIN-001', type: 'INCOME', date: '2026-11-02', category: 'Booking Photobooth (Pelunasan)', desc: 'Pelunasan Booking #BKG-001 Sarah & Reza', amount: 2500000, method: 'Transfer BCA' },
-        { id: 'FIN-002', type: 'EXPENSE', date: '2026-11-04', category: 'Kertas & Ribbon Tinta Printer', desc: 'Beli 2 Roll DNP RX1HS Paper & Ribbon (1400 print)', amount: 1650000, method: 'Transfer BCA' },
-        { id: 'FIN-003', type: 'EXPENSE', date: '2026-11-07', category: 'Honor Crew & Fotografer', desc: 'Fee 2 Crew Wedding Sarah & Reza (Andi + Rian)', amount: 600000, method: 'Transfer BCA' },
-        { id: 'FIN-004', type: 'INCOME', date: '2026-11-10', category: 'Booking Photobooth (Pelunasan)', desc: 'Pelunasan Sweet 17 Kimberly PIK', amount: 1800000, method: 'Transfer BCA' },
-        { id: 'FIN-005', type: 'EXPENSE', date: '2026-11-12', category: 'Properti / Aksesoris Lucu', desc: 'Beli aksesoris kacamata fun, bando, papan quotes unik', amount: 220000, method: 'QRIS' },
-        { id: 'FIN-006', type: 'INCOME', date: '2026-11-15', category: 'Booking Photobooth (Pelunasan)', desc: 'Full Payment Gala Astra Ventura #BKG-003', amount: 3500000, method: 'Transfer Mandiri / BRI' },
-        { id: 'FIN-007', type: 'EXPENSE', date: '2026-11-16', category: 'Marketing & Iklan Medsos', desc: 'Instagram Ads campaign promo Wedding Photobooth Nov-Des', amount: 500000, method: 'Transfer BCA' },
-        { id: 'FIN-008', type: 'INCOME', date: '2026-11-18', category: 'Booking Photobooth (DP)', desc: 'DP Booking Dion & Claudia (Engagement)', amount: 1000000, method: 'Transfer BCA' },
-        { id: 'FIN-009', type: 'EXPENSE', date: '2026-11-20', category: 'Honor Crew & Fotografer', desc: 'Honor 3 Crew Gala Astra (Andi, Surya, Rian)', amount: 950000, method: 'Transfer BCA' },
-        { id: 'FIN-010', type: 'EXPENSE', date: '2026-11-21', category: 'Bahan Bakar & Transport Logistik', desc: 'Bensin & tol operasional van logistik Astra', amount: 150000, method: 'Tunai / Cash' },
-        { id: 'FIN-011', type: 'INCOME', date: '2026-11-22', category: 'Booking Photobooth (DP)', desc: 'DP Booking Tech Startup 360 Video #BKG-005', amount: 1500000, method: 'Transfer BCA' }
+        { id: 'FIN-001', type: 'INCOME', date: '2026-11-02', category: 'Booking Photobooth (Pelunasan)', desc: 'Pelunasan Booking #BKG-001 Sarah & Reza', amount: 2500000, method: 'Transfer BCA', createdAt: '2026-11-02T10:15:30.000Z' },
+        { id: 'FIN-002', type: 'EXPENSE', date: '2026-11-04', category: 'Kertas & Ribbon Tinta Printer', desc: 'Beli 2 Roll DNP RX1HS Paper & Ribbon (1400 print)', amount: 1650000, method: 'Transfer BCA', createdAt: '2026-11-04T13:45:10.000Z' },
+        { id: 'FIN-003', type: 'EXPENSE', date: '2026-11-07', category: 'Honor Crew & Fotografer', desc: 'Fee 2 Crew Wedding Sarah & Reza (Andi + Rian)', amount: 600000, method: 'Transfer BCA', createdAt: '2026-11-07T16:20:05.000Z' },
+        { id: 'FIN-004', type: 'INCOME', date: '2026-11-10', category: 'Booking Photobooth (Pelunasan)', desc: 'Pelunasan Sweet 17 Kimberly PIK', amount: 1800000, method: 'Transfer BCA', createdAt: '2026-11-10T11:05:42.000Z' },
+        { id: 'FIN-005', type: 'EXPENSE', date: '2026-11-12', category: 'Properti / Aksesoris Lucu', desc: 'Beli aksesoris kacamata fun, bando, papan quotes unik', amount: 220000, method: 'QRIS', createdAt: '2026-11-12T14:30:18.000Z' },
+        { id: 'FIN-006', type: 'INCOME', date: '2026-11-15', category: 'Booking Photobooth (Pelunasan)', desc: 'Full Payment Gala Astra Ventura #BKG-003', amount: 3500000, method: 'Transfer Mandiri / BRI', createdAt: '2026-11-15T09:40:55.000Z' },
+        { id: 'FIN-007', type: 'EXPENSE', date: '2026-11-16', category: 'Marketing & Iklan Medsos', desc: 'Instagram Ads campaign promo Wedding Photobooth Nov-Des', amount: 500000, method: 'Transfer BCA', createdAt: '2026-11-16T15:10:00.000Z' },
+        { id: 'FIN-008', type: 'INCOME', date: '2026-11-18', category: 'Booking Photobooth (DP)', desc: 'DP Booking Dion & Claudia (Engagement)', amount: 1000000, method: 'Transfer BCA', createdAt: '2026-11-18T10:25:34.000Z' },
+        { id: 'FIN-009', type: 'EXPENSE', date: '2026-11-20', category: 'Honor Crew & Fotografer', desc: 'Honor 3 Crew Gala Astra (Andi, Surya, Rian)', amount: 950000, method: 'Transfer BCA', createdAt: '2026-11-20T17:50:22.000Z' },
+        { id: 'FIN-010', type: 'EXPENSE', date: '2026-11-21', category: 'Bahan Bakar & Transport Logistik', desc: 'Bensin & tol operasional van logistik Astra', amount: 150000, method: 'Tunai / Cash', createdAt: '2026-11-21T08:15:40.000Z' },
+        { id: 'FIN-011', type: 'INCOME', date: '2026-11-22', category: 'Booking Photobooth (DP)', desc: 'DP Booking Tech Startup 360 Video #BKG-005', amount: 1500000, method: 'Transfer BCA', createdAt: '2026-11-22T14:00:12.000Z' }
       ]
     };
 
@@ -1526,7 +1525,7 @@
         saveToLocalStorage();
       }
 
-      // Normalize & migrate event types so only 'Wedding' and 'Event' are used
+      // Normalize & migrate event types, status bagi hasil & kategori keuangan
       if (appData && Array.isArray(appData.bookings)) {
         let changed = false;
         appData.bookings.forEach(b => {
@@ -1537,8 +1536,44 @@
             b.type = 'Event';
           }
           if (b.type !== original) changed = true;
+          // Pastikan Bagi Hasil Selesai lunas penuh (bukan sisa tagihan)
+          if ((b.isBagiHasil || b.status === 'Bagi Hasil' || (b.shareMOMU > 0) || (b.shareClient > 0)) && b.status === 'Selesai') {
+            if (b.paid !== b.price) {
+              b.paid = b.price;
+              changed = true;
+            }
+          }
+          if (b.phone === 'null') { b.phone = ''; changed = true; }
+          if (b.location === 'null') { b.location = ''; changed = true; }
+          if (b.crew === 'null') { b.crew = ''; changed = true; }
+          if (b.notes === 'null') { b.notes = ''; changed = true; }
         });
         if (changed) {
+          saveToLocalStorage();
+        }
+      }
+
+      if (appData && Array.isArray(appData.finances)) {
+        let finChanged = false;
+        appData.finances.forEach(f => {
+          if (f.category === 'Pelunasan Event') {
+            f.category = 'Pendapatan Event';
+            finChanged = true;
+          }
+          if (!f.createdAt) {
+            f.createdAt = f.date ? new Date(f.date + 'T12:00:00').toISOString() : new Date().toISOString();
+            finChanged = true;
+          }
+          if (f.desc === 'null') { f.desc = ''; finChanged = true; }
+          if (f.method === 'null') { f.method = 'Transfer BCA'; finChanged = true; }
+        });
+        // Urutkan transaksi dari yang paling baru
+        appData.finances.sort((a, b) => {
+          const tA = a.createdAt ? new Date(a.createdAt).getTime() : (a.date ? new Date(a.date + 'T00:00:00').getTime() : 0);
+          const tB = b.createdAt ? new Date(b.createdAt).getTime() : (b.date ? new Date(b.date + 'T00:00:00').getTime() : 0);
+          return tB - tA;
+        });
+        if (finChanged) {
           saveToLocalStorage();
         }
       }
@@ -1654,9 +1689,9 @@
     // ==========================================
     function updateViewMonthHeader() {
       if (state.isAllTime) {
-        document.getElementById('current-month-label').textContent = '?? Semua Waktu (All-Time)';
+        document.getElementById('current-month-label').textContent = '📅 Semua Waktu (All-Time)';
       } else if (state.viewMonth === 'ALL') {
-        document.getElementById('current-month-label').textContent = `?? Tahun ${state.viewYear} (Sepanjang Tahun)`;
+        document.getElementById('current-month-label').textContent = `📅 Tahun ${state.viewYear} (Sepanjang Tahun)`;
       } else {
         const monthName = MONTH_NAMES[state.viewMonth];
         document.getElementById('current-month-label').textContent = `${monthName} ${state.viewYear}`;
@@ -1683,7 +1718,7 @@
         selectYear.classList.add('opacity-30', 'pointer-events-none');
         filterIcon.classList.add('bg-indigo-100', 'text-indigo-600');
         filterIcon.classList.remove('bg-slate-100', 'text-slate-600');
-        document.getElementById('current-month-label').textContent = '?? Semua Waktu (All-Time)';
+        document.getElementById('current-month-label').textContent = '📅 Semua Waktu (All-Time)';
       } else {
         banner.classList.add('hidden');
         btn.classList.remove('bg-indigo-600', 'border-indigo-600', 'text-white', 'shadow-sm');
@@ -1985,7 +2020,7 @@
                     <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold ${
                       b.type === 'Wedding' ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-indigo-50 text-indigo-700 border border-indigo-200'
                     }">
-                      ${b.type === 'Wedding' ? '?? Wedding' : '?? Event'}
+                      ${b.type === 'Wedding' ? '💍 Wedding' : '🎪 Event'}
                     </span>
                     ${getStatusBadge(b.status)}
                   </div>
@@ -2047,7 +2082,7 @@
       }
 
       // Unpaid DP or pending balances for this month
-      const unpaidTotal = monthlyBookings.reduce((sum, b) => sum + (Number(b.price) - Number(b.paid)), 0);
+      const unpaidTotal = monthlyBookings.filter(b => !b.isBagiHasil && b.status === 'DP').reduce((sum, b) => sum + Math.max(0, Number(b.price) - Number(b.paid)), 0);
       document.getElementById('overview-unpaid-dp').textContent = formatRupiah(unpaidTotal);
     }
 
@@ -2207,7 +2242,7 @@
 
           eventsHtml += `
             <div onclick="showBookingDetail('${b.id}')" title="${escapeHtml(b.client)} [${escapeHtml(b.type)}] (${b.timeStart} - ${b.timeEnd})&#10;${escapeHtml(b.packageName)}&#10;Lokasi: ${escapeHtml(b.location)}" class="text-[10px] font-semibold px-1.5 py-0.5 rounded border ${bgClass} truncate cursor-pointer hover:shadow-xs transition-shadow">
-              ${b.timeStart} ${b.type === 'Wedding' ? '??' : '??'} ${escapeHtml(b.client)}
+              ${b.timeStart} ${b.type === 'Wedding' ? '💍' : '🎪'} ${escapeHtml(b.client)}
             </div>
           `;
         });
@@ -2324,7 +2359,7 @@
                       ? 'bg-rose-50 text-rose-700 border border-rose-200' 
                       : 'bg-indigo-50 text-indigo-700 border border-indigo-200'
                   }">
-                    ${b.type === 'Wedding' ? '?? Wedding' : '?? Event'}
+                    ${b.type === 'Wedding' ? '💍 Wedding' : '🎪 Event'}
                   </span>
                 </div>
               </td>
@@ -2333,8 +2368,8 @@
                 <div class="text-[11px] text-slate-400">${formatRupiah(b.price)}</div>
               </td>
               <td class="py-3 px-4 max-w-[200px]">
-                <div class="truncate text-slate-700" title="${escapeHtml(b.location)}">${escapeHtml(b.location)}</div>
-                <div class="text-[11px] text-slate-400">${b.phone || '-'}</div>
+                <div class="truncate text-slate-700" title="${escapeHtml(b.location)}">${escapeHtml((b.location && b.location !== 'null') ? b.location : '-')}</div>
+                <div class="text-[11px] text-slate-400">${(b.phone && b.phone !== 'null') ? b.phone : '-'}</div>
               </td>
               <td class="py-3 px-4 whitespace-nowrap">
                 <div class="mb-1">${getStatusBadge(b.status)}</div>
@@ -2399,7 +2434,7 @@
                       ? 'bg-rose-50 text-rose-700 border border-rose-200' 
                       : 'bg-indigo-50 text-indigo-700 border border-indigo-200'
                   }">
-                    ${b.type === 'Wedding' ? '?? Wedding' : '?? Event'}
+                    ${b.type === 'Wedding' ? '💍 Wedding' : '🎪 Event'}
                   </span>
                 </div>
               </td>
@@ -2408,8 +2443,8 @@
                 <div class="text-[11px] text-slate-400">${formatRupiah(b.price)}</div>
               </td>
               <td class="py-3 px-4 max-w-[200px]">
-                <div class="truncate text-slate-700" title="${escapeHtml(b.location)}">${escapeHtml(b.location)}</div>
-                <div class="text-[11px] text-slate-400">${b.phone || '-'}</div>
+                <div class="truncate text-slate-700" title="${escapeHtml(b.location)}">${escapeHtml((b.location && b.location !== 'null') ? b.location : '-')}</div>
+                <div class="text-[11px] text-slate-400">${(b.phone && b.phone !== 'null') ? b.phone : '-'}</div>
               </td>
               <td class="py-3 px-4 text-center whitespace-nowrap">
                 <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-2xs">
@@ -2420,7 +2455,7 @@
               <td class="py-3 px-4 whitespace-nowrap">
                 <div class="mb-1">
                   <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                    ? Selesai
+                    ✓ Selesai
                   </span>
                 </div>
                 <div class="text-[11px] text-slate-500">
@@ -2490,10 +2525,10 @@
         return matchType && matchCat;
       });
 
-      // Sort by createdAt timestamp (newest input first), fallback to date
+      // Urutkan catatan keuangan dari waktu yang terbaru (createdAt / timestamp input)
       filtered.sort((a, b) => {
-        const tA = a.createdAt ? new Date(a.createdAt) : new Date(a.date);
-        const tB = b.createdAt ? new Date(b.createdAt) : new Date(b.date);
+        const tA = a.createdAt ? new Date(a.createdAt).getTime() : (a.date ? new Date(a.date + 'T00:00:00').getTime() : 0);
+        const tB = b.createdAt ? new Date(b.createdAt).getTime() : (b.date ? new Date(b.date + 'T00:00:00').getTime() : 0);
         return tB - tA;
       });
 
@@ -2538,8 +2573,13 @@
           const d = new Date(f.date);
           const dateFormatted = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 
-          const timeFormatted = f.createdAt ? new Date(f.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '—';
-          const dateInputFormatted = f.createdAt ? new Date(f.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : dateFormatted;
+          const ctObj = f.createdAt ? new Date(f.createdAt) : null;
+          const timeFormatted = ctObj 
+            ? ctObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB'
+            : (f.date ? '12:00:00 WIB' : '—');
+          const dateInputFormatted = ctObj 
+            ? ctObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) 
+            : dateFormatted;
 
           return `
             <tr class="hover:bg-slate-50 transition-colors">
@@ -2547,7 +2587,7 @@
                 <div>${dateFormatted}</div>
               </td>
               <td class="py-3 px-4 whitespace-nowrap">
-                <div class="font-semibold text-slate-700">${timeFormatted}</div>
+                <div class="font-bold text-slate-800 font-mono text-xs">${timeFormatted}</div>
                 <div class="text-[10px] text-slate-400">${dateInputFormatted}</div>
               </td>
               <td class="py-3 px-4 whitespace-nowrap">
@@ -2557,18 +2597,11 @@
                   ${isIncome ? '+ Pemasukan' : '- Pengeluaran'}
                 </span>
               </td>
-              <td class="py-3 px-4 text-slate-700 font-semibold">${escapeHtml(f.category)}</td>
-              <td class="py-3 px-4 text-slate-600">
-                <div>${escapeHtml(f.desc)}</div>
-                ${f.bookingId ? `
-                  <div class="mt-0.5">
-                    <span onclick="showBookingDetail('${f.bookingId}')" class="inline-flex items-center gap-1 text-[10px] font-semibold text-brand-600 hover:text-brand-800 bg-brand-50 hover:bg-brand-100 px-1.5 py-0.5 rounded cursor-pointer transition-colors" title="Lihat detail agenda terkait">
-                      📅 Agenda Terkait
-                    </span>
-                  </div>
-                ` : ''}
+              <td class="py-3 px-4 text-slate-700 font-semibold">${escapeHtml((f.category && f.category !== 'null') ? f.category : '-')}</td>
+              <td class="py-3 px-4 text-slate-700">
+                <div class="font-medium">${escapeHtml((f.desc && f.desc !== 'null') ? f.desc : '—')}</div>
               </td>
-              <td class="py-3 px-4 text-slate-500 text-xs">${f.method || '-'}</td>
+              <td class="py-3 px-4 text-slate-500 text-xs">${(f.method && f.method !== 'null') ? f.method : '-'}</td>
               <td class="py-3 px-4 text-right font-bold whitespace-nowrap ${isIncome ? 'text-emerald-600' : 'text-rose-600'}">
                 ${isIncome ? '+' : '-'} ${formatRupiah(f.amount)}
               </td>
@@ -3011,9 +3044,12 @@
         }
       }
 
-      // 2. Jika status agenda sebelumnya adalah DP diterima dan diubah menjadi Lunas/Selesai:
-      // otomatis sisa pembayaran terbayar (paid = price)
-      if (existing && existing.status === 'DP' && (status === 'Lunas' || status === 'Selesai')) {
+      // 2. Saat status lunas maka kolom DP / Bayar Sekarang mengikuti nominal total biaya
+      if (status === 'Lunas' || (status === 'Selesai' && type !== 'Event')) {
+        if (priceInput && paidInput) {
+          paidInput.value = priceInput.value;
+        }
+      } else if (existing && existing.status === 'DP' && (status === 'Lunas' || status === 'Selesai')) {
         if (priceInput && paidInput) {
           paidInput.value = priceInput.value;
         }
@@ -3086,15 +3122,31 @@
         }
         const price = selectedOption.getAttribute('data-price');
         document.getElementById('booking-price').value = price;
+        const statusSel = document.getElementById('booking-status');
+        if (statusSel && statusSel.value === 'Lunas') {
+          const paidInp = document.getElementById('booking-paid');
+          if (paidInp) paidInp.value = price;
+        }
         calculateBalance();
       }
     }
 
     function calculateBalance() {
-      const price = Number(document.getElementById('booking-price').value) || 0;
-      const paid = Number(document.getElementById('booking-paid').value) || 0;
+      const priceInput = document.getElementById('booking-price');
+      const paidInput = document.getElementById('booking-paid');
       const statusSelect = document.getElementById('booking-status');
       if (!statusSelect) return;
+
+      const price = Number(priceInput ? priceInput.value : 0) || 0;
+      let paid = Number(paidInput ? paidInput.value : 0) || 0;
+
+      // Saat status lunas maka kolom DP / Bayar Sekarang mengikuti nominal total biaya
+      if (statusSelect.value === 'Lunas') {
+        if (paidInput && price > 0) {
+          paidInput.value = price;
+        }
+        return;
+      }
 
       // Jika user sudah memilih status Selesai atau Bagi Hasil, jangan ubah otomatis
       if (statusSelect.value === 'Selesai' || statusSelect.value === 'Bagi Hasil') {
@@ -3103,6 +3155,7 @@
 
       if (paid >= price && price > 0) {
         statusSelect.value = 'Lunas';
+        if (paidInput) paidInput.value = price;
       } else {
         statusSelect.value = 'DP';
       }
@@ -3242,10 +3295,10 @@
       const activeBookings = appData.bookings
         .filter(b => b.status !== 'Selesai')
         .sort((a, b) => new Date(a.date) - new Date(b.date));
-      sel.innerHTML = '<option value="">� Tidak dikaitkan ke agenda �</option>' +
+      sel.innerHTML = '<option value="">— Tidak dikaitkan ke agenda —</option>' +
         activeBookings.map(b => {
           const d = new Date(b.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
-          return `<option value="${b.id}">${d} � ${b.client} (${b.status})</option>`;
+          return `<option value="${b.id}">${d} • ${b.client} (${b.status})</option>`;
         }).join('');
       if (currentVal) sel.value = currentVal;
     }
@@ -3304,7 +3357,7 @@
         document.getElementById('booking-date').value = dateDefault;
       } else {
         const dayStr = String(new Date().getDate()).padStart(2, '0');
-        // Guard: viewMonth can be 'ALL' in full-year mode ? fall back to current month
+        // Guard: viewMonth can be 'ALL' in full-year mode -> fall back to current month
         const effectiveMonth = (state.viewMonth === 'ALL' || state.isAllTime)
           ? new Date().getMonth()
           : state.viewMonth;
@@ -3443,7 +3496,7 @@
           paidVal = 0;
         } else if (status === 'Selesai') {
           priceVal = shareMOMU + shareClient;
-          paidVal = shareMOMU;
+          paidVal = priceVal; // Lunas penuh: bagi hasil selesai tidak ada sisa tagihan klien!
         }
       }
 
@@ -3487,7 +3540,7 @@
 
       // Pencatatan Kas Otomatis: Pelunasan Agenda (DP -> Lunas / Selesai)
       if (autoPelunasanAmount > 0) {
-        const categoryPelunasan = type === 'Wedding' ? 'Pelunasan Wedding' : 'Pelunasan Event';
+        const categoryPelunasan = type === 'Wedding' ? 'Pelunasan Wedding' : 'Pendapatan Event';
         const finPelunasan = {
           id: 'FIN-' + Date.now().toString().slice(-6),
           createdAt: new Date().toISOString(),
@@ -3508,18 +3561,19 @@
 
       // Pencatatan Kas Otomatis: Event Bagi Hasil Selesai
       if (isBagiHasil && status === 'Selesai' && shareMOMU >= 0 && (!existing || existing.status !== 'Selesai')) {
-        const todayDate = new Date().toISOString().slice(0, 10);
+        const nowObj = new Date();
+        const todayDate = nowObj.getFullYear() + '-' + String(nowObj.getMonth() + 1).padStart(2, '0') + '-' + String(nowObj.getDate()).padStart(2, '0');
         const shareTotal = shareMOMU + shareClient;
         // Catat pemasukan bagian MOMU
         if (shareMOMU > 0) {
           const finIncome = {
             id: 'FIN-' + Date.now().toString().slice(-6),
-            createdAt: new Date().toISOString(),
+            createdAt: nowObj.toISOString(),
             bookingId: bookingData.id,
             type: 'INCOME',
             date: todayDate,
             category: 'Bagi Hasil Event',
-            desc: `Bagi Hasil Event: ${bookingData.client} � Pendapatan kita (Total: ${formatRupiah(shareTotal)}, Klien: ${formatRupiah(shareClient)})`,
+            desc: `Bagi Hasil Event: ${bookingData.client} — Pendapatan kita (Total: ${formatRupiah(shareTotal)}, Klien: ${formatRupiah(shareClient)})`,
             amount: shareMOMU,
             method: 'Transfer BCA'
           };
@@ -3532,12 +3586,12 @@
         if (shareClient > 0) {
           const finExpense = {
             id: 'FIN-' + (Date.now() + 1).toString().slice(-6),
-            createdAt: new Date().toISOString(),
+            createdAt: new Date(nowObj.getTime() + 1000).toISOString(),
             bookingId: bookingData.id,
             type: 'EXPENSE',
             date: todayDate,
             category: 'Bagi Hasil Event (Klien)',
-            desc: `Bagian Klien Event: ${bookingData.client} � ${formatRupiah(shareClient)} dari total ${formatRupiah(shareTotal)}`,
+            desc: `Bagian Klien Event: ${bookingData.client} — ${formatRupiah(shareClient)} dari total ${formatRupiah(shareTotal)}`,
             amount: shareClient,
             method: 'Transfer BCA'
           };
@@ -3567,12 +3621,15 @@
             ? 'Booking Photobooth (Pelunasan)' 
             : 'Booking Photobooth (DP)';
 
+          const nowObj = new Date();
+          const todayDateStr = nowObj.getFullYear() + '-' + String(nowObj.getMonth() + 1).padStart(2, '0') + '-' + String(nowObj.getDate()).padStart(2, '0');
+
           const finItem = {
             id: 'FIN-' + Date.now().toString().slice(-6),
-            createdAt: new Date().toISOString(),
+            createdAt: nowObj.toISOString(),
             bookingId: bookingData.id,
             type: 'INCOME',
-            date: bookingData.date,
+            date: todayDateStr, // Tanggal pencatatan adalah tanggal input sekarang, bukan tanggal agenda
             category: category,
             desc: `Pembayaran ${bookingData.status} oleh ${bookingData.client}`,
             amount: bookingData.paid,
@@ -3625,7 +3682,7 @@
       document.getElementById('modal-finance-title').textContent = 'Catat Transaksi Keuangan';
       
       const dayStr = String(new Date().getDate()).padStart(2, '0');
-      // Guard: viewMonth can be 'ALL' in full-year mode ? fall back to current month
+      // Guard: viewMonth can be 'ALL' in full-year mode -> fall back to current month
       const effectiveFinMonth = (state.viewMonth === 'ALL' || state.isAllTime)
         ? new Date().getMonth()
         : state.viewMonth;
@@ -3669,6 +3726,7 @@
       const id = document.getElementById('finance-id').value;
       const type = document.querySelector('input[name="finance-type"]:checked').value;
 
+      const existingFin = id ? appData.finances.find(x => x.id === id) : null;
       const finData = {
         id: id || ('FIN-' + Date.now().toString().slice(-6)),
         type: type,
@@ -3677,7 +3735,7 @@
         desc: document.getElementById('finance-desc').value.trim(),
         amount: Number(document.getElementById('finance-amount').value),
         method: document.getElementById('finance-method').value,
-        createdAt: id ? ((appData.finances.find(x => x.id === id) || {}).createdAt || new Date().toISOString()) : new Date().toISOString(),
+        createdAt: existingFin ? (existingFin.createdAt || existingFin.created_at || new Date().toISOString()) : new Date().toISOString(),
         bookingId: document.getElementById('finance-booking-ref') ? (document.getElementById('finance-booking-ref').value || null) : null
       };
 
@@ -3839,12 +3897,12 @@
                 ? 'bg-rose-50 text-rose-700 border border-rose-200' 
                 : 'bg-indigo-50 text-indigo-700 border border-indigo-200'
             }">
-              ${b.type === 'Wedding' ? '?? Wedding' : '?? Event'}
+              ${b.type === 'Wedding' ? '💍 Wedding' : '🎪 Event'}
             </span>
           </div>
           <div class="flex justify-between">
             <span class="text-slate-400">Kontak WhatsApp:</span>
-            <span class="font-medium text-slate-800">${b.phone || '-'}</span>
+            <span class="font-medium text-slate-800">${(b.phone && b.phone !== 'null') ? b.phone : '-'}</span>
           </div>
         </div>
 
@@ -3891,13 +3949,20 @@
           </div>` : ''}
         </div>
 
-        ${b.status === 'Bagi Hasil' ? `
-        <div class="bg-purple-50 p-4 rounded-xl border border-purple-200 space-y-1 text-xs">
+        ${(b.isBagiHasil || b.status === 'Bagi Hasil' || (b.shareMOMU > 0) || (b.shareClient > 0)) ? `
+        <div class="bg-purple-50 p-4 rounded-xl border border-purple-200 space-y-1.5 text-xs">
           <div class="flex justify-between font-bold text-purple-900">
             <span>Model Pembayaran:</span>
-            <span>Kerjasama Bagi Hasil</span>
+            <span>Kerjasama Bagi Hasil ${b.status === 'Selesai' ? '(Selesai & Lunas)' : ''}</span>
           </div>
+          ${b.status === 'Selesai' ? `
+          <div class="flex justify-between pt-1 border-t border-purple-200 font-bold text-emerald-700">
+            <span>Sisa Tagihan:</span>
+            <span>Lunas (Rp 0)</span>
+          </div>
+          ` : `
           <p class="text-[11px] text-purple-700">Perolehan uang akan dihitung dan dibagi saat agenda berstatus selesai.</p>
+          `}
         </div>` : `
         <div class="bg-rose-50/50 p-4 rounded-xl border border-brand-100 space-y-1.5 text-xs">
           <div class="flex justify-between text-slate-600">
@@ -4049,7 +4114,7 @@
         case 'Bagi Hasil':
           return `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-purple-100 text-purple-800 border border-purple-200">Bagi Hasil</span>`;
         case 'Selesai':
-          return `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">? Selesai${printCount ? ` (${printCount} cetak)` : ''}</span>`;
+          return `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">✓ Selesai${printCount ? ` (${printCount} cetak)` : ''}</span>`;
         default:
           return `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200">${escapeHtml(status || 'DP')}</span>`;
       }

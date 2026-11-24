@@ -34,7 +34,7 @@ let expenseChartInstance = null;
 // Category Lists
 const INCOME_CATEGORIES = [
   'DP Booking Photobooth',
-  'Pelunasan Event Photobooth',
+  'Pendapatan Event',
   'Self-Photo Studio',
   'Cetak Tambahan / Extra Prints',
   'Jual Frame / Merchandise',
@@ -153,7 +153,7 @@ const SAMPLE_TRANSACTIONS = [
   {
     id: 'TX-1003',
     type: 'pemasukan',
-    category: 'Pelunasan Event Photobooth',
+    category: 'Pendapatan Event',
     description: 'Pelunasan Penuh Clarissa Sweet 17th',
     amount: 1950000,
     date: '2026-11-12',
@@ -1076,7 +1076,7 @@ async function handleSaveBooking(e) {
       const newTx = {
         id: 'TX-' + Math.floor(1000 + Math.random() * 9000),
         type: 'pemasukan',
-        category: (deposit >= totalFee) ? 'Pelunasan Event Photobooth' : 'DP Booking Photobooth',
+        category: (deposit >= totalFee) ? 'Pendapatan Event' : 'DP Booking Photobooth',
         description: `Pembayaran ${clientName} (${packageName})`,
         amount: deposit,
         date: date,

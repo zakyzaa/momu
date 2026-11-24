@@ -11,9 +11,9 @@
 function rowToBooking(r) {
   if (!r) return null;
   const price = Number(r.price ?? r.total_fee ?? 0);
-  const paid = Number(r.paid ?? r.deposit ?? 0);
-  const pkgName = r.package_name ?? '';
-  let pkgId = r.package_id ?? '';
+  let paid = Number(r.paid ?? r.deposit ?? 0);
+  const pkgName = (r.package_name && r.package_name !== 'null') ? r.package_name : '';
+  let pkgId = (r.package_id && r.package_id !== 'null') ? r.package_id : '';
   // Jika package_id kosong tapi package_name ada, cari ID paket yang cocok
   if (!pkgId && pkgName && typeof appData !== 'undefined' && Array.isArray(appData.packages)) {
     const found = appData.packages.find(p => p.name === pkgName);
@@ -22,7 +22,7 @@ function rowToBooking(r) {
   let printCount = Number(r.print_count ?? 0);
   let shareMOMU = Number(r.share_momu ?? 0);
   let shareClient = Number(r.share_client ?? 0);
-  let notes = r.notes ?? '';
+  let notes = (r.notes && r.notes !== 'null') ? r.notes : '';
   if (!printCount && notes && notes.includes('[PRINT:')) {
     const match = notes.match(/\[PRINT:(\d+)\]/);
     if (match) {
@@ -38,54 +38,64 @@ function rowToBooking(r) {
       notes = notes.replace(/\[PROFIT:\d+,\d+\]\s*/, '');
     }
   }
+  const status = r.status ?? 'DP';
+  const isBagiHasil = (status === 'Bagi Hasil' || (shareMOMU > 0) || (shareClient > 0));
+  if (isBagiHasil && status === 'Selesai') {
+    paid = price; // Untuk bagi hasil selesai, lunas penuh
+  }
   return {
     id: r.id,
-    client: r.client ?? r.client_name ?? '',
+    client: ((r.client ?? r.client_name ?? '') !== 'null') ? (r.client ?? r.client_name ?? '') : '',
     type: (r.type ?? r.event_type ?? 'Event').toLowerCase().includes('wedding') ? 'Wedding' : 'Event',
     date: r.date,
     timeStart: r.time_start ?? r.start_time ?? '12:00',
     timeEnd: r.time_end ?? r.end_time ?? '15:00',
     packageId: pkgId,
     packageName: pkgName,
-    phone: r.phone ?? r.client_phone ?? '',
-    location: r.location ?? r.venue ?? '',
+    phone: ((r.phone ?? r.client_phone ?? '') !== 'null') ? (r.phone ?? r.client_phone ?? '') : '',
+    location: ((r.location ?? r.venue ?? '') !== 'null') ? (r.location ?? r.venue ?? '') : '',
     price: price,
     paid: paid,
-    status: r.status ?? 'DP',
-    isBagiHasil: (r.status === 'Bagi Hasil' || (shareMOMU > 0)),
+    status: status,
+    isBagiHasil: isBagiHasil,
     shareTotal: (shareMOMU + shareClient),
     shareMOMU: shareMOMU,
     shareClient: shareClient,
     printCount: printCount,
-    crew: r.crew ?? '',
+    crew: ((r.crew ?? '') !== 'null') ? (r.crew ?? '') : '',
     notes: notes
   };
 }
 
 function bookingToRow(b) {
   if (!b) return null;
-  const price = Number(b.price ?? b.total_fee ?? b.totalFee ?? 0);
-  const paid = Number(b.paid ?? b.deposit ?? 0);
-  const remaining = Math.max(0, price - paid);
+  let price = Number(b.price ?? b.total_fee ?? b.totalFee ?? 0);
+  let paid = Number(b.paid ?? b.deposit ?? 0);
+  const isBagiHasil = (b.isBagiHasil || b.status === 'Bagi Hasil' || (b.shareMOMU > 0) || (b.shareClient > 0));
+  if (isBagiHasil && b.status === 'Selesai') {
+    paid = price;
+  }
+  const remaining = isBagiHasil ? 0 : Math.max(0, price - paid);
   let tags = '';
   if (b.printCount) tags += `[PRINT:${b.printCount}] `;
   if (b.shareMOMU || b.shareClient) tags += `[PROFIT:${b.shareMOMU || 0},${b.shareClient || 0}] `;
-  const notesStr = (tags + (b.notes || '')).trim();
+  const notesStr = (tags + ((b.notes && b.notes !== 'null') ? b.notes : '')).trim();
   const row = {
     id: b.id,
-    client_name: b.client ?? b.client_name ?? b.clientName ?? '',
-    client_phone: b.phone ?? b.client_phone ?? b.clientPhone ?? '',
+    client_name: ((b.client ?? b.client_name ?? b.clientName ?? '') !== 'null') ? (b.client ?? b.client_name ?? b.clientName ?? '') : '',
+    client_phone: ((b.phone ?? b.client_phone ?? b.clientPhone ?? '') !== 'null') ? (b.phone ?? b.client_phone ?? b.clientPhone ?? '') : '',
     event_type: (b.type ?? b.event_type ?? b.eventType ?? 'Event').toLowerCase().includes('wedding') ? 'Wedding' : 'Event',
-    package_name: b.packageName ?? b.package_name ?? '',
+    package_name: ((b.packageName ?? b.package_name ?? '') !== 'null') ? (b.packageName ?? b.package_name ?? '') : '',
+    package_id: (b.packageId && b.packageId !== 'null') ? b.packageId : null,
     date: b.date,
     start_time: b.timeStart ?? b.start_time ?? b.startTime ?? '12:00',
     end_time: b.timeEnd ?? b.end_time ?? b.endTime ?? '15:00',
-    venue: b.location ?? b.venue ?? '',
+    venue: ((b.location ?? b.venue ?? '') !== 'null') ? (b.location ?? b.venue ?? '') : '',
     total_fee: price,
     deposit: paid,
     remaining: remaining,
     status: b.status ?? 'DP',
-    crew: b.crew ?? '',
+    crew: ((b.crew ?? '') !== 'null') ? (b.crew ?? '') : '',
     notes: notesStr
   };
   return row;
@@ -94,15 +104,19 @@ function bookingToRow(b) {
 function rowToTx(r) {
   if (!r) return null;
   const isIncome = (r.type === 'pemasukan' || r.type === 'INCOME');
+  let category = r.category ?? '';
+  if (category === 'Pelunasan Event') category = 'Pendapatan Event';
+  const desc = (r.description ?? r.desc ?? '');
   return {
     id: r.id,
-    bookingId: r.booking_id ?? '',
+    bookingId: (r.booking_id && r.booking_id !== 'null') ? r.booking_id : '',
     type: isIncome ? 'INCOME' : 'EXPENSE',
-    category: r.category ?? '',
-    desc: r.description ?? r.desc ?? '',
+    category: category !== 'null' ? category : '',
+    desc: desc !== 'null' ? desc : '',
     amount: Number(r.amount ?? 0),
     date: r.date,
-    method: r.method ?? ''
+    method: ((r.method && r.method !== 'null') ? r.method : ''),
+    createdAt: r.created_at ?? r.createdAt ?? (r.date ? new Date(r.date + 'T12:00:00').toISOString() : new Date().toISOString())
   };
 }
 
@@ -110,16 +124,22 @@ function txToRow(t) {
   if (!t) return null;
   const rawType = (t.type || '').toUpperCase();
   const dbType = (rawType === 'INCOME' || rawType === 'PEMASUKAN') ? 'pemasukan' : 'pengeluaran';
-  return {
+  let category = t.category ?? '';
+  if (category === 'Pelunasan Event') category = 'Pendapatan Event';
+  const row = {
     id: t.id,
-    booking_id: t.bookingId || null,
+    booking_id: (t.bookingId && t.bookingId !== 'null') ? t.bookingId : null,
     type: dbType,
-    category: t.category ?? '',
-    description: t.desc ?? t.description ?? '',
+    category: category,
+    description: (t.desc ?? t.description ?? '') !== 'null' ? (t.desc ?? t.description ?? '') : '',
     amount: Number(t.amount ?? 0),
     date: t.date,
-    method: t.method ?? ''
+    method: (t.method && t.method !== 'null') ? t.method : ''
   };
+  if (t.createdAt) {
+    row.created_at = t.createdAt;
+  }
+  return row;
 }
 
 function rowToPackage(r) {
@@ -319,6 +339,7 @@ async function updateTransactionDB(id, txData) {
   if (!window.supabaseClient) return null;
   const row = txToRow(txData);
   delete row.id;
+  delete row.created_at; // Pastikan edit transaksi tidak memperbarui timestamp dibuat
 
   const { data, error } = await supabaseClient
     .from('transactions')
