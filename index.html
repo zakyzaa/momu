@@ -70,8 +70,8 @@
   </style>
   <!-- Supabase JS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="supabase-config.js?v=2.3"></script>
-  <script src="supabase-db.js?v=2.3"></script>
+  <script src="supabase-config.js?v=2.4"></script>
+  <script src="supabase-db.js?v=2.4"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased">
 
@@ -631,6 +631,7 @@
               <thead>
                 <tr class="bg-slate-50 border-b border-slate-200/70 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                   <th class="py-3 px-4">Tanggal</th>
+                  <th class="py-3 px-4">Waktu Input</th>
                   <th class="py-3 px-4">Tipe</th>
                   <th class="py-3 px-4">Kategori</th>
                   <th class="py-3 px-4">Deskripsi / Keterangan</th>
@@ -1092,6 +1093,28 @@
   </div>
 
   <!-- ========================================== -->
+  <!-- ========================================== -->
+  <!-- MODAL: DETAIL TRANSAKSI KEUANGAN -->
+  <!-- ========================================== -->
+  <div id="modal-finance-detail" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+        <div>
+          <h3 class="font-bold text-slate-900 text-base" id="finance-detail-title">Detail Transaksi</h3>
+          <p class="text-xs text-slate-400" id="finance-detail-id"></p>
+        </div>
+        <button onclick="closeFinanceDetailModal()" class="w-8 h-8 rounded-lg hover:bg-slate-200 flex items-center justify-center text-slate-500 cursor-pointer">✕</button>
+      </div>
+      <div class="p-6 space-y-4" id="finance-detail-content">
+        <!-- Injected by JS -->
+      </div>
+      <div class="px-6 pb-5 flex justify-end gap-2">
+        <button onclick="editFinanceFromDetail()" id="btn-edit-finance-detail" class="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 text-xs font-semibold cursor-pointer">✏️ Edit</button>
+        <button onclick="closeFinanceDetailModal()" class="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold cursor-pointer">Tutup</button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL 3: DETAIL BOOKING & INVOICE / PRINT -->
   <!-- ========================================== -->
   <div id="modal-detail" class="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs hidden flex items-center justify-center p-4 overflow-y-auto">
@@ -1549,7 +1572,7 @@
               appData.bookings = freshBookings;
               saveToLocalStorage();
               renderAll();
-              showToast('? Jadwal booking diperbarui secara realtime!');
+              showToast('✓ Jadwal booking diperbarui secara realtime!');
             }
           },
           async () => {
@@ -1559,7 +1582,7 @@
               appData.finances = freshFinances;
               saveToLocalStorage();
               renderAll();
-              showToast('? Catatan kas diperbarui secara realtime!');
+              showToast('✓ Catatan kas diperbarui secara realtime!');
             }
           },
           async () => {
@@ -1572,7 +1595,7 @@
               populatePackageSelect();
               renderSchedule();
               renderOverview();
-              showToast('? Katalog paket diperbarui secara realtime!');
+              showToast('✓ Katalog paket diperbarui secara realtime!');
             }
           }
         );
@@ -1584,7 +1607,7 @@
               appData.bookings = freshBookings;
               saveToLocalStorage();
               renderAll();
-              showToast('? Jadwal booking diperbarui secara realtime!');
+              showToast('✓ Jadwal booking diperbarui secara realtime!');
             }
           });
         }
@@ -1595,7 +1618,7 @@
               appData.finances = freshFinances;
               saveToLocalStorage();
               renderAll();
-              showToast('? Catatan kas diperbarui secara realtime!');
+              showToast('✓ Catatan kas diperbarui secara realtime!');
             }
           });
         }
@@ -1607,7 +1630,7 @@
               saveToLocalStorage();
               renderPackages();
               populatePackageSelect();
-              showToast('? Katalog paket diperbarui secara realtime!');
+              showToast('✓ Katalog paket diperbarui secara realtime!');
             }
           });
         }
@@ -1785,7 +1808,7 @@
       state.viewMonth = 'ALL';
       updateViewMonthHeader();
       renderAll();
-      showToast(`? Melacak seluruh data Tahun ${state.viewYear}`);
+      showToast(`✓ Melacak seluruh data Tahun ${state.viewYear}`);
     }
 
     function onMonthSelectChange() {
@@ -1888,7 +1911,7 @@
       const profitMargin = totalIncome > 0 ? Math.round((netProfit / totalIncome) * 100) : 0;
 
       // Update stat cards: Total Agenda dalam periode yang dipilih (termasuk yang Selesai, kecuali Batal)
-      const periodBookings = monthlyBookings.filter(b => b.status !== 'Batal');
+      const periodBookings = monthlyBookings;
       document.getElementById('stat-total-booking').textContent = periodBookings.length;
       document.getElementById('stat-total-income').textContent = formatRupiah(totalIncome);
       document.getElementById('stat-total-expense').textContent = formatRupiah(totalExpense);
@@ -1924,7 +1947,7 @@
         .filter(b => {
           if (!b.date) return false;
           // Hilang jika status Selesai atau Batal
-          if (b.status === 'Selesai' || b.status === 'Batal') return false;
+          if (b.status === 'Selesai') return false; // Agenda selesai tidak tampil di agenda terdekat
           // Agenda aktif mulai hari ini ke depan
           const bDateStr = String(b.date).slice(0, 10);
           return bDateStr >= todayStr;
@@ -2467,8 +2490,12 @@
         return matchType && matchCat;
       });
 
-      // Sort by date descending
-      filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+      // Sort by createdAt timestamp (newest input first), fallback to date
+      filtered.sort((a, b) => {
+        const tA = a.createdAt ? new Date(a.createdAt) : new Date(a.date);
+        const tB = b.createdAt ? new Date(b.createdAt) : new Date(b.date);
+        return tB - tA;
+      });
 
       // Calculate totals for the full period (before type/cat filter)
       const monthInc = periodAll.filter(f => f.type === 'INCOME').reduce((s, f) => s + Number(f.amount), 0);
@@ -2500,7 +2527,7 @@
       if (filtered.length === 0) {
         tbody.innerHTML = `
           <tr>
-            <td colspan="7" class="py-8 text-center text-slate-400 text-xs">
+            <td colspan="8" class="py-8 text-center text-slate-400 text-xs">
               Belum ada catatan transaksi keuangan pada periode ini.
             </td>
           </tr>
@@ -2511,9 +2538,18 @@
           const d = new Date(f.date);
           const dateFormatted = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 
+          const timeFormatted = f.createdAt ? new Date(f.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '—';
+          const dateInputFormatted = f.createdAt ? new Date(f.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : dateFormatted;
+
           return `
             <tr class="hover:bg-slate-50 transition-colors">
-              <td class="py-3 px-4 font-medium text-slate-800 whitespace-nowrap">${dateFormatted}</td>
+              <td class="py-3 px-4 font-medium text-slate-800 whitespace-nowrap">
+                <div>${dateFormatted}</div>
+              </td>
+              <td class="py-3 px-4 whitespace-nowrap">
+                <div class="font-semibold text-slate-700">${timeFormatted}</div>
+                <div class="text-[10px] text-slate-400">${dateInputFormatted}</div>
+              </td>
               <td class="py-3 px-4 whitespace-nowrap">
                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold ${
                   isIncome ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
@@ -2538,6 +2574,9 @@
               </td>
               <td class="py-3 px-4 text-center whitespace-nowrap">
                 <div class="inline-flex items-center gap-1">
+                  <button onclick="showFinanceDetail('${f.id}')" title="Lihat Detail Transaksi" class="p-1 rounded-lg hover:bg-brand-100 text-brand-600 cursor-pointer">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                  </button>
                   <button onclick="editFinance('${f.id}')" title="Edit Transaksi" class="p-1 rounded-lg hover:bg-slate-200 text-slate-600 cursor-pointer">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                   </button>
@@ -2585,7 +2624,7 @@
       const totalInc = sourceFinances.filter(f => f.type === 'INCOME').reduce((s, f) => s + Number(f.amount), 0);
       const totalExp = sourceFinances.filter(f => f.type === 'EXPENSE').reduce((s, f) => s + Number(f.amount), 0);
       const totalNet = totalInc - totalExp;
-      const totalEvents = sourceBookings.filter(b => b.status !== 'Batal').length;
+      const totalEvents = sourceBookings.length;
       const avgIncome = totalEvents > 0 ? Math.round(totalInc / totalEvents) : 0;
       const marginPct = totalInc > 0 ? Math.round((totalNet / totalInc) * 100) : 0;
       const expenseRatio = totalInc > 0 ? Math.round((totalExp / totalInc) * 100) : 0;
@@ -2640,7 +2679,7 @@
             bookings: 0
           };
         }
-        if (b.status !== 'Batal') {
+        if (true) { // semua agenda dihitung
           monthMap[key].bookings++;
         }
       });
@@ -3127,7 +3166,7 @@
         if (typeof updatePackageDB === 'function' && isSupabaseConfigured() && window.supabaseClient) {
           await updatePackageDB(id, updated);
         }
-        showToast('? Paket berhasil diperbarui!');
+        showToast('✓ Paket berhasil diperbarui!');
       } else {
         const newPkg = {
           id: 'pkg-' + Date.now().toString().slice(-6),
@@ -3140,7 +3179,7 @@
         if (typeof insertPackage === 'function' && isSupabaseConfigured() && window.supabaseClient) {
           await insertPackage(newPkg);
         }
-        showToast('? Paket baru berhasil ditambahkan!');
+        showToast('✓ Paket baru berhasil ditambahkan!');
       }
 
       saveToLocalStorage();
@@ -3165,7 +3204,7 @@
         renderPackages();
         renderSchedule();
         renderOverview();
-        showToast('? Paket berhasil dihapus!');
+        showToast('✓ Paket berhasil dihapus!');
       }
     }
 
@@ -3212,8 +3251,8 @@
     }
 
     function updateUpcomingBadge() {
-      // Semua agenda aktif: bukan Selesai dan bukan Batal
-      const active = appData.bookings.filter(b => b.status !== 'Selesai' && b.status !== 'Batal').length;
+      // Semua agenda aktif: bukan Selesai
+      const active = appData.bookings.filter(b => b.status !== 'Selesai').length;
       document.getElementById('badge-total-upcoming').textContent = active;
     }
 
@@ -3451,6 +3490,7 @@
         const categoryPelunasan = type === 'Wedding' ? 'Pelunasan Wedding' : 'Pelunasan Event';
         const finPelunasan = {
           id: 'FIN-' + Date.now().toString().slice(-6),
+          createdAt: new Date().toISOString(),
           bookingId: bookingData.id,
           type: 'INCOME',
           date: new Date().toISOString().slice(0, 10),
@@ -3463,7 +3503,7 @@
         if (typeof isSupabaseConfigured === 'function' && isSupabaseConfigured() && window.supabaseClient) {
           insertTransaction(finPelunasan);
         }
-        showToast(`? Pelunasan ${formatRupiah(autoPelunasanAmount)} otomatis terbayar & dicatat ke Buku Kas!`);
+        showToast(`✓ Pelunasan ${formatRupiah(autoPelunasanAmount)} otomatis terbayar & dicatat ke Buku Kas!`);
       }
 
       // Pencatatan Kas Otomatis: Event Bagi Hasil Selesai
@@ -3474,6 +3514,7 @@
         if (shareMOMU > 0) {
           const finIncome = {
             id: 'FIN-' + Date.now().toString().slice(-6),
+            createdAt: new Date().toISOString(),
             bookingId: bookingData.id,
             type: 'INCOME',
             date: todayDate,
@@ -3491,6 +3532,7 @@
         if (shareClient > 0) {
           const finExpense = {
             id: 'FIN-' + (Date.now() + 1).toString().slice(-6),
+            createdAt: new Date().toISOString(),
             bookingId: bookingData.id,
             type: 'EXPENSE',
             date: todayDate,
@@ -3504,14 +3546,14 @@
             insertTransaction(finExpense);
           }
         }
-        showToast(`? Bagi hasil tercatat! MOMU: ${formatRupiah(shareMOMU)}, Klien: ${formatRupiah(shareClient)}`);
+        showToast(`✓ Bagi hasil tercatat! MOMU: ${formatRupiah(shareMOMU)}, Klien: ${formatRupiah(shareClient)}`);
       }
 
       if (id) {
         const index = appData.bookings.findIndex(b => b.id === id);
         if (index !== -1) appData.bookings[index] = bookingData;
         if (!autoPelunasanAmount && (!isBagiHasil || status !== 'Selesai')) {
-          showToast('? Jadwal booking berhasil diperbarui!');
+          showToast('✓ Jadwal booking berhasil diperbarui!');
         }
         if (typeof isSupabaseConfigured === 'function' && isSupabaseConfigured() && window.supabaseClient) {
           updateBooking(id, bookingData);
@@ -3527,6 +3569,7 @@
 
           const finItem = {
             id: 'FIN-' + Date.now().toString().slice(-6),
+            createdAt: new Date().toISOString(),
             bookingId: bookingData.id,
             type: 'INCOME',
             date: bookingData.date,
@@ -3541,7 +3584,7 @@
           }
         }
 
-        showToast('? Jadwal booking baru berhasil ditambahkan!');
+        showToast('✓ Jadwal booking baru berhasil ditambahkan!');
         if (typeof isSupabaseConfigured === 'function' && isSupabaseConfigured() && window.supabaseClient) {
           insertBooking(bookingData);
         }
@@ -3565,7 +3608,7 @@
         appData.bookings = appData.bookings.filter(x => x.id !== id);
         saveToLocalStorage();
         renderAll();
-        showToast('? Booking berhasil dihapus.');
+        showToast('✓ Booking berhasil dihapus.');
 
         if (typeof isSupabaseConfigured === 'function' && isSupabaseConfigured() && window.supabaseClient) {
           deleteBookingDB(id);
@@ -3633,19 +3676,21 @@
         category: document.getElementById('finance-category').value,
         desc: document.getElementById('finance-desc').value.trim(),
         amount: Number(document.getElementById('finance-amount').value),
-        method: document.getElementById('finance-method').value
+        method: document.getElementById('finance-method').value,
+        createdAt: id ? ((appData.finances.find(x => x.id === id) || {}).createdAt || new Date().toISOString()) : new Date().toISOString(),
+        bookingId: document.getElementById('finance-booking-ref') ? (document.getElementById('finance-booking-ref').value || null) : null
       };
 
       if (id) {
         const index = appData.finances.findIndex(x => x.id === id);
         if (index !== -1) appData.finances[index] = finData;
-        showToast('? Transaksi berhasil diperbarui!');
+        showToast('✓ Transaksi berhasil diperbarui!');
         if (typeof isSupabaseConfigured === 'function' && isSupabaseConfigured() && window.supabaseClient) {
           updateTransactionDB(id, finData);
         }
       } else {
         appData.finances.push(finData);
-        showToast('? Transaksi baru berhasil dicatat!');
+        showToast('✓ Transaksi baru berhasil dicatat!');
         if (typeof isSupabaseConfigured === 'function' && isSupabaseConfigured() && window.supabaseClient) {
           insertTransaction(finData);
         }
@@ -3661,11 +3706,109 @@
         appData.finances = appData.finances.filter(f => f.id !== id);
         saveToLocalStorage();
         renderAll();
-        showToast('? Transaksi dihapus.');
+        showToast('✓ Transaksi dihapus.');
 
         if (typeof isSupabaseConfigured === 'function' && isSupabaseConfigured() && window.supabaseClient) {
           deleteTransactionDB(id);
         }
+      }
+    }
+
+
+    // ==========================================
+    // FINANCE DETAIL MODAL
+    // ==========================================
+    let _currentFinanceDetailId = null;
+
+    function showFinanceDetail(id) {
+      const f = appData.finances.find(x => x.id === id);
+      if (!f) return;
+      _currentFinanceDetailId = id;
+
+      const isIncome = f.type === 'INCOME';
+      const dateObj = new Date(f.date);
+      const formattedDate = dateObj.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+      let createdAtStr = '—';
+      if (f.createdAt) {
+        const ctObj = new Date(f.createdAt);
+        createdAtStr = ctObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) +
+          ' pukul ' + ctObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      }
+
+      document.getElementById('finance-detail-title').textContent = isIncome ? '📈 Detail Pemasukan' : '📉 Detail Pengeluaran';
+      document.getElementById('finance-detail-id').textContent = 'ID: ' + f.id;
+
+      // Find linked booking
+      const linkedBooking = f.bookingId ? appData.bookings.find(b => b.id === f.bookingId) : null;
+
+      document.getElementById('finance-detail-content').innerHTML = `
+        <div class="${isIncome ? 'bg-emerald-50 border border-emerald-200' : 'bg-rose-50 border border-rose-200'} p-4 rounded-xl text-center">
+          <div class="text-xs font-bold ${isIncome ? 'text-emerald-700' : 'text-rose-700'} uppercase mb-1">
+            ${isIncome ? '+ Pemasukan' : '- Pengeluaran'}
+          </div>
+          <div class="text-3xl font-black ${isIncome ? 'text-emerald-600' : 'text-rose-600'}">
+            ${isIncome ? '+' : '-'} ${formatRupiah(f.amount)}
+          </div>
+          <div class="text-xs ${isIncome ? 'text-emerald-600' : 'text-rose-600'} mt-1 font-semibold">
+            ${escapeHtml(f.category)}
+          </div>
+        </div>
+
+        <div class="bg-slate-50 p-4 rounded-xl space-y-2.5 text-xs">
+          <div class="flex justify-between gap-2">
+            <span class="text-slate-500 shrink-0">Tanggal Transaksi:</span>
+            <span class="font-semibold text-slate-800 text-right">${formattedDate}</span>
+          </div>
+          <div class="flex justify-between gap-2">
+            <span class="text-slate-500 shrink-0">Waktu Dicatat:</span>
+            <span class="font-semibold text-slate-700 text-right">${createdAtStr}</span>
+          </div>
+          <div class="flex justify-between gap-2">
+            <span class="text-slate-500 shrink-0">Metode Pembayaran:</span>
+            <span class="font-semibold text-slate-800">${escapeHtml(f.method || '—')}</span>
+          </div>
+        </div>
+
+        <div class="bg-white border border-slate-200 p-4 rounded-xl space-y-2 text-xs">
+          <div class="font-bold text-slate-700 text-[11px] uppercase">Deskripsi / Keterangan</div>
+          <div class="text-slate-800 leading-relaxed">${escapeHtml(f.desc || '—')}</div>
+        </div>
+
+        ${linkedBooking ? `
+        <div class="bg-brand-50 border border-brand-200 p-3.5 rounded-xl space-y-1.5 text-xs cursor-pointer hover:bg-brand-100 transition-colors" onclick="closeFinanceDetailModal(); showBookingDetail('${linkedBooking.id}')">
+          <div class="font-bold text-brand-700 text-[11px] uppercase flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            Agenda Terkait (klik untuk lihat detail)
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">Klien / Acara:</span>
+            <span class="font-bold text-slate-800">${escapeHtml(linkedBooking.client)}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">Tanggal Acara:</span>
+            <span class="font-semibold text-slate-700">${new Date(linkedBooking.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-500">Status:</span>
+            <span class="font-semibold">${linkedBooking.status}</span>
+          </div>
+        </div>
+        ` : ''}
+      `;
+
+      document.getElementById('modal-finance-detail').classList.remove('hidden');
+    }
+
+    function closeFinanceDetailModal() {
+      document.getElementById('modal-finance-detail').classList.add('hidden');
+      _currentFinanceDetailId = null;
+    }
+
+    function editFinanceFromDetail() {
+      if (_currentFinanceDetailId) {
+        closeFinanceDetailModal();
+        editFinance(_currentFinanceDetailId);
       }
     }
 
@@ -3790,7 +3933,7 @@
       document.body.appendChild(dlAnchor);
       dlAnchor.click();
       dlAnchor.remove();
-      showToast('? File cadangan JSON berhasil diunduh!');
+      showToast('✓ File cadangan JSON berhasil diunduh!');
     }
 
     function restoreDataFromFile(e) {
@@ -3818,7 +3961,7 @@
               syncLocalToSupabase(appData.bookings, appData.finances, appData.packages);
             }
             renderAll();
-            showToast('? Data MOMU berhasil dipulihkan dari cadangan!');
+            showToast('✓ Data MOMU berhasil dipulihkan dari cadangan!');
           } else {
             alert('Format file JSON tidak cocok dengan struktur data MOMU.');
           }
@@ -3843,7 +3986,7 @@
         state.isAllTime = false;
         updateViewMonthHeader();
         renderAll();
-        showToast('? Data contoh MOMU berhasil dimuat kembali!');
+        showToast('✓ Data contoh MOMU berhasil dimuat kembali!');
       }
     }
 
@@ -3872,7 +4015,7 @@
       a.download = `MOMU_Keuangan_${periodLabel}.csv`;
       a.click();
       URL.revokeObjectURL(url);
-      showToast('? Berhasil mengekspor CSV Keuangan!');
+      showToast('✓ Berhasil mengekspor CSV Keuangan!');
     }
 
     function openAddPackageModal() {
