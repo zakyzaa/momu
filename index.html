@@ -2588,7 +2588,6 @@
               </td>
               <td class="py-3 px-4 whitespace-nowrap">
                 <div class="font-bold text-slate-800 font-mono text-xs">${timeFormatted}</div>
-                <div class="text-[10px] text-slate-400">${dateInputFormatted}</div>
               </td>
               <td class="py-3 px-4 whitespace-nowrap">
                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold ${
@@ -2998,7 +2997,7 @@
       onBookingStatusChange();
     }
 
-    function onBookingStatusChange() {
+    function onBookingStatusChange(syncPaid = true) {
       const statusSelect = document.getElementById('booking-status');
       if (!statusSelect) return;
       const status = statusSelect.value;
@@ -3044,13 +3043,9 @@
         }
       }
 
-      // 2. Saat status lunas maka kolom DP / Bayar Sekarang mengikuti nominal total biaya
-      if (status === 'Lunas' || (status === 'Selesai' && type !== 'Event')) {
-        if (priceInput && paidInput) {
-          paidInput.value = priceInput.value;
-        }
-      } else if (existing && existing.status === 'DP' && (status === 'Lunas' || status === 'Selesai')) {
-        if (priceInput && paidInput) {
+      // 2. Saat user memilih status lunas, kolom DP/bayar sekarang mengikuti nominal total biaya
+      if (syncPaid && (status === 'Lunas' || (status === 'Selesai' && type !== 'Event' && !(isBagiHasilHidden && isBagiHasilHidden.value === 'true')))) {
+        if (priceInput && paidInput && priceInput.value) {
           paidInput.value = priceInput.value;
         }
       }
@@ -3137,29 +3132,31 @@
       const statusSelect = document.getElementById('booking-status');
       if (!statusSelect) return;
 
-      const price = Number(priceInput ? priceInput.value : 0) || 0;
-      let paid = Number(paidInput ? paidInput.value : 0) || 0;
-
-      // Saat status lunas maka kolom DP / Bayar Sekarang mengikuti nominal total biaya
-      if (statusSelect.value === 'Lunas') {
-        if (paidInput && price > 0) {
-          paidInput.value = price;
-        }
-        return;
-      }
-
       // Jika user sudah memilih status Selesai atau Bagi Hasil, jangan ubah otomatis
       if (statusSelect.value === 'Selesai' || statusSelect.value === 'Bagi Hasil') {
         return;
       }
 
-      if (paid >= price && price > 0) {
+      const price = Number(priceInput ? priceInput.value : 0) || 0;
+      let paid = Number(paidInput ? paidInput.value : 0) || 0;
+
+      // Jika user sedang mengetik di kolom Total Biaya dan statusnya Lunas, kolom bayar mengikuti total biaya
+      if (document.activeElement === priceInput && statusSelect.value === 'Lunas') {
+        if (paidInput && price > 0) {
+          paidInput.value = price;
+          paid = price;
+        }
+      }
+
+      // Saat memilih status lunas, nominal di kolom DP/bayar sekarang dapat diganti
+      // Jika nominal diganti (kurang dari total biaya), otomatis status berganti menjadi DP diterima ('DP')
+      // Namun jika nominal yang dimasukkan sesuai dengan nominal total biaya paket, status otomatis berganti ke Lunas ('Lunas')
+      if (price > 0 && paid >= price) {
         statusSelect.value = 'Lunas';
-        if (paidInput) paidInput.value = price;
       } else {
         statusSelect.value = 'DP';
       }
-      onBookingStatusChange();
+      onBookingStatusChange(false);
     }
 
     // Modal Package CRUD Handlers
@@ -3572,8 +3569,8 @@
             bookingId: bookingData.id,
             type: 'INCOME',
             date: todayDate,
-            category: 'Bagi Hasil Event',
-            desc: `Bagi Hasil Event: ${bookingData.client} — Pendapatan kita (Total: ${formatRupiah(shareTotal)}, Klien: ${formatRupiah(shareClient)})`,
+            category: 'Pendapatan Event',
+            desc: `Pendapatan Hasil Event '${bookingData.client}'`,
             amount: shareMOMU,
             method: 'Transfer BCA'
           };
@@ -3591,7 +3588,7 @@
             type: 'EXPENSE',
             date: todayDate,
             category: 'Bagi Hasil Event (Klien)',
-            desc: `Bagian Klien Event: ${bookingData.client} — ${formatRupiah(shareClient)} dari total ${formatRupiah(shareTotal)}`,
+            desc: `Pembagian Hasil Event '${bookingData.client}'`,
             amount: shareClient,
             method: 'Transfer BCA'
           };
